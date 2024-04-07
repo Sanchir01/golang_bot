@@ -1,17 +1,18 @@
 package myTelegramBot
 
 import (
-	"log"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	pocket "github.com/zhashkevych/go-pocket-sdk"
 )
 
 type Bot struct {
-	bot *tgbotapi.BotAPI
+	bot          *tgbotapi.BotAPI
+	pocketClient *pocket.Client
+	redirectUrl  string
 }
 
-func NewBot(bot *tgbotapi.BotAPI) *Bot {
-	return &Bot{bot: bot}
+func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, redirectUrl string) *Bot {
+	return &Bot{bot: bot, pocketClient: pocketClient, redirectUrl: redirectUrl}
 }
 
 func (b *Bot) Start() error {
@@ -22,23 +23,8 @@ func (b *Bot) Start() error {
 	return nil
 }
 
-func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			b.handleMessage(update.Message)
-		}
-	}
-
-}
-func (b *Bot) handleMessage(Message *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(Message.Chat.ID, Message.Text)
-	msg.ReplyToMessageID = Message.MessageID
-
-	b.bot.Send(msg)
-}
-
 func (b *Bot) initUpdatesChannel() tgbotapi.UpdatesChannel {
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
